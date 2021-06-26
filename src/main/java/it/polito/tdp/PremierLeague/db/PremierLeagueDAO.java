@@ -6,7 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import it.polito.tdp.PremierLeague.model.Action;
+import it.polito.tdp.PremierLeague.model.Arco;
 import it.polito.tdp.PremierLeague.model.Match;
 import it.polito.tdp.PremierLeague.model.Player;
 import it.polito.tdp.PremierLeague.model.Team;
@@ -110,5 +113,55 @@ public class PremierLeagueDAO {
 			return null;
 		}
 	}
-	
+	public void getVertices(int id, Map<Integer,Player> idMap){
+		String sql = "SELECT (a.PlayerID), players.name, a.TeamID, (a.TotalSuccessfulPassesAll+ a.Assists)/(a.TimePlayed) as eff "
+				+ "FROM actions as a, players "
+				+ "WHERE MatchID=? "
+				+ "AND players.PlayerID=a.PlayerID";
+		
+		Connection conn = DBConnect.getConnection();
+		
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, id);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				Player player = new Player(res.getInt("PlayerID"),res.getInt("TeamID"), res.getString("Name"), res.getDouble("eff"));
+				idMap.put(player.getPlayerID(), player);
+			}
+			conn.close();
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	public List<Arco> getEdges(int id, Map<Integer,Player> idMap){
+		String sql = "SELECT a1.PlayerID AS p1, a2.PlayerID AS p2 "
+				+ "FROM actions a1, actions a2 "
+				+ "WHERE a1.MatchID=a2.MatchID "
+				+ "AND a1.MatchID=? "
+				+ "AND a1.PlayerID> a2.PlayerID "
+				+ "AND a1.TeamID <> a2.TeamID";
+		List<Arco> result = new ArrayList<Arco>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, id);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				Arco arco = new Arco(idMap.get(res.getInt("p1")), idMap.get(res.getInt("p2")));
+			result.add(arco);
+			}
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }

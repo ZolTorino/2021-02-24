@@ -3,6 +3,23 @@ package it.polito.tdp.PremierLeague.model;
 public class Team {
 	Integer teamID;
 	String name;
+	Integer goals=0;
+	Integer incampo=11;
+	public Integer getIncampo() {
+		return incampo;
+	}
+
+	public void setIncampo(Integer incampo) {
+		this.incampo = incampo;
+	}
+
+	public Integer getGoals() {
+		return goals;
+	}
+
+	public void setGoals(Integer goals) {
+		this.goals = goals;
+	}
 
 	public Team(Integer teamID, String name) {
 		super();
